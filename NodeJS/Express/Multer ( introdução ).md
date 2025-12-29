@@ -498,45 +498,402 @@ Form-data: avatar (file)
 ```
 
 ---
+---
+---
 
-## 🚀 Boas Práticas de Produção
+##  ARMAZENAR IMAGEM COM 'MULTER COMPLETO' - (UDEMY)
 
-✔ Usar variáveis de ambiente  
-✔ Armazenar arquivos em nuvem  
-✔ Validar MIME type  
-✔ Limitar tamanho  
-✔ Autenticação obrigatória
+Armazenamento de image no Banco de dados - **Integração**
+<br>
+_**Passo a passo**_:
+Armazenamento das imagens no **banco da dados** ( relações entre tabelas ).
+
+### 1. Install Multer
+
+```bash
+npm install multer
+```
+<br>
 
 ---
 
-## ☁ Próximo Nível
+### 2. Config Multer file - (arquivo de configuração)
 
-- Integração com MongoDB/PostgreSQL
-    
-- Upload para AWS S3
-    
-- Resize de imagens
-    
-- Exclusão de arquivos antigos
-    
-- Versionamento
-    
+```js
+import multer from 'multer';
+import { extname, resolve } from 'node:path';
+
+const random = () => Math.floor(Math.random() * 10000 + 10000);
+
+export default {
+	
+	// Function que filtra o tipo de arquivo (PNG/JPG)
+	fileFilter: (req, file, cb) => {
+		if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg')
+			return cb(
+				new multer.MulterError('The file must be in PNG or JPEG format.')
+			);
+		return cb(null, true);
+	},
+	
+	// Function que define o lugar e nome do arquivo(image) a armazenar.
+	storage: multer.diskStorage({
+		destination: (req, file, cb) => {
+			cb(null, resolve(__dirname, '..', '..', 'uploads'));
+		},
+		filename: (req, file, cb) => {
+			cb(null, `${Date.now()}_${random()}${extname(file.originalname)}`);
+		},
+	}),
+};
+```
+<br>
 
 ---
 
-## ✅ Resultado Final
+## Integração
+### 3. Create migration (tabela)
 
-Você tem agora uma **API REST real**, segura e pronta para evoluir.
+```bash
+npx sequelize migration:generate --name photos_table
+```
+<br>
 
-Se quiser, posso:
+---
 
-- Converter para TypeScript
-    
-- Adaptar para Docker
-    
-- Criar versão com banco de dados real
-    
-- Integrar Cloudinary ou S3
-    
+### 4. Configuration Migration file
 
-É só pedir 👌
+```js
+/** @type {import('sequelize-cli').Migration} */
+
+module.exports = {
+
+	async up(queryInterface, Sequelize) {
+		await queryInterface.createTable('photos', {
+			id: {
+				type: Sequelize.INTEGER,
+				autoIncrement: true,
+				primaryKey: true,
+				allowNull: false,
+			},
+			originalname: {
+				type: Sequelize.STRING,
+				allowNull: false,
+			},
+			filename: {
+				type: Sequelize.STRING,
+				allowNull: false,
+			},
+			student_id: {
+				type: Sequelize.INTEGER,
+				allowNull: true,
+ 				references: {
+				model: 'students',
+				key: 'id',
+				},
+				onDelete: 'SET NULL',
+				onUpdate: 'CASCADE',
+			},
+			created_at: {
+				type: Sequelize.DATE,
+				allowNull: false,
+			},
+			updated_at: {
+				type: Sequelize.DATE,
+				allowNull: false,
+			},
+		});
+	},
+	
+	async down(queryInterface) {
+		await queryInterface.dropTable('photos');
+	},
+
+};
+```
+<br>
+
+---
+
+### 5. Create tabela in DB (migrate)
+
+```bash
+npx db:migrate
+```
+<br>
+
+---
+
+### 6. Create Model (photo)
+
+```js
+import Sequelize, { Model } from 'sequelize';
+
+class PhotoModel extends Model {
+	static init(sequelize) {
+		super.init(
+			{
+				originalname: {
+					type: Sequelize.STRING,
+					defaultValue: '',
+					validate: {
+						notEmpty: {
+						msg: 'The Originalname field cannot be empty.',
+						},
+					},
+				},
+				filename: {
+					type: Sequelize.STRING,
+					defaultValue: '',
+					validate: {
+						notEmpty: {
+							msg: 'The Filename field cannot be empty.',
+						},
+					},
+				},
+			},
+			{ sequelize, tableName: 'photos' }
+		);
+	
+		return this;
+	}
+	
+	// Function para relação entre table (1:1) 
+	static associate(models) {
+		this.belongsTo(models.StudentModel, { foreignKey: 'student_id' });
+	}
+}
+
+export default PhotoModel;
+```
+
+---
+
+### 7. Include Model - connection (`index.js`)
+
+```js
+import { Sequelize } from 'sequelize';
+import databaseConfig from '../config/database';
+import Student from '../models/StudentModel';
+import User from '../models/UserModel';
+import Photo from '../models/PhotoModel';
+
+const connection = new Sequelize(databaseConfig);
+const models = [Student, User, Photo];
+
+models.forEach((model) => model.init(connection));
+models.forEach(
+	(model) => model.associate && model.associate(connection.models)
+);
+```
+<br>
+
+---
+
+### 8. Create Controller (photo)
+
+```js
+import multer from 'multer';
+import multerConfig from '../config/multerConfig';
+import PhotoModel from '../models/PhotoModel';
+
+const upload = multer(multerConfig).single('photo');
+
+class PhotoControllers {
+	store(req, res) {
+		return upload(req, res, async (error) => {
+			if (error)
+				return res.status(400).json({
+					errors: [error.code],
+			});
+
+			try {
+				const { originalname, filename } = req.file;
+				const { student_id } = req.body;
+			
+				const photo = await PhotoModel.create({
+					originalname,
+					filename,
+					student_id,
+				});
+		
+				return res.json(photo);
+		
+			} catch (e) {
+				return res.status(400).json({
+					errors: 'Student not found!',
+				});
+			}
+	
+		});
+	}
+
+}
+
+export default new PhotoControllers();
+```
+<br>
+## 8.1 Ajuste na visualização - Controller `student.js` 
+
+Métodos **`index`** and **`show`**
+
+```js
+
+class StudentControllers {
+
+	async index(req, res) {
+		try {
+		// findall, especificando atributo a serem retorandos.
+			const students = await Student.findAll({
+				attributes: ['name', 'lastname', 'email', 'classname'],
+				order: [['id', 'DESC'],	[PhotoModel, 'id', 'DESC']],
+				include: {
+					model: PhotoModel,
+					attributes: ['url', 'originalname', 'filename'],
+				},
+			});
+			
+			if (students.length === 0) {
+				return res.status(200).json({
+					students: [],
+					msg: 'There is no data in the database.',
+				});
+			}
+			
+			return res.status(200).json(students);
+		} catch (e) {
+			return res.status(500).json({
+				errors: ['Internal server error.'],
+			});
+		}
+	}
+	
+	async show(req, res) {
+		const id = Number(req.params.id);
+		
+		if (!id || !Number.isInteger(id))
+			return res.status(400).json({
+				msg: 'Invalid id',
+			});
+		
+		try {
+			const student = await Student.findByPk(id, {
+				attributes: ['name', 'lastname', 'email', 'classname'],
+				order: [['id', 'DESC'],	[PhotoModel, 'id', 'DESC']],
+				include: {
+					model: PhotoModel,
+					attributes: ['url', 'originalname', 'filename'],
+				},
+			});
+		
+			if (!student)
+				return res.status(404).json({
+					student: null,
+					msg: 'Student not found',
+				});
+			return res.status(200).json(student);
+		} catch (e) {
+			return res.status(500).json({
+				errors: e.errors ? e.errors.map((err) => err.message) : [e.message],
+			});
+		}
+	}
+	
+}
+
+export default new StudentControllers();
+```
+<br>
+
+---
+
+## 9. Create path `static` (uploads. image)
+
+ - Create file **`src/config/appConfig.js`**
+
+```js
+// src/config/appConfig.js
+
+export default {
+	url: `${process.env.URL_PATH}:3001`,
+};
+```
+<br>
+- Configura **`modelPhoto`** (attribute VIRTUAL)
+
+```js
+// src/models/PhotoModel.js
+
+super.init(
+	{
+		url: {
+			type: Sequelize.VIRTUAL,
+			get() {
+				return`${appConfig.url}/images/${this.getDataValue('filename')}`;
+			},
+		},
+	},
+);
+```
+<br>
+-  Configura **`statis`** in `src/app.js`
+
+```js
+// src/app.js
+
+import { resolve } from 'node:path';
+
+express.static(resolve(__dirname, '..', 'uploads'));
+```
+
+
+- Confirme a configuração do _destination in **`MULTER`** 
+
+```js
+storage: multer.diskStorage({
+	destination: (req, file, cb) => {
+		cb(null, resolve(__dirname, '..', '..', 'uploads', 'images'));
+	},
+	filename: (req, file, cb) => {
+		cb(null, `${Date.now()}_${random()}${extname(file.originalname)}`);
+	},
+}),
+
+```
+<br> 
+
+- Ativar a **URL** no return no **`contrutor`** desejado.
+
+```js
+class StudentControllers {
+	
+	async index(req, res) {
+	
+		try {
+		// findall, especificando atributo a serem retorandos.
+		const students = await Student.findAll({
+			attributes: ['name', 'lastname', 'email', 'classname'],
+			order: [['id', 'DESC'],	[PhotoModel, 'id', 'DESC']],
+			include: { model: PhotoModel, 
+				attributes: ['url', 'originalname', 'filename'],
+			},
+		});
+		
+		if (students.length === 0) {
+			return res.status(200).json({
+				students: [],
+				msg: 'There is no data in the database.',
+			});
+		}
+		
+		return res.status(200).json(students);
+		} catch (e) {
+			return res.status(500).json({
+				errors: ['Internal server error.'],
+			});
+		}
+	}
+}
+
+export default new StudentControllers();
+```

@@ -118,4 +118,139 @@ console.log(status); // Saída: "Aprovado"
 
 O operador ternário é útil para expressões simples, mas para lógica mais complexa, um **`if/else`** tradicional pode ser mais legível.
 
+---
+---
+
+
+# Diferença entre **_`&&`, `||` e `??`_**  
+
+ Quando usar cada um **sem cair em bug**
+
+##  O que é **short-circuit**?
+
+**Short-circuit** significa:  
+👉 _o JavaScript para de avaliar a expressão assim que já sabe o resultado._
+
+### Exemplo com `&&`
+
+```js
+false && func();
+```
+
+- O **JS** olha para **`false`**
+- Já sabe que o resultado será `false`
+- ❌ **Não executa** **`func()`**
+
+👉 Por isso:
+
+```js
+isLogged && showDashboard();
+```
+
+Só chama `showDashboard()` se `isLogged` for **truthy**.
+<br>
+### Exemplo real:
+
+```js
+const user = null;
+
+user && console.log(user.name);
+```
+
+✔️ Não quebra  
+❌ Sem short-circuit daria erro (`user.name`)
+
+---
+
+## 2️⃣ Operador `&&` (AND)
+
+### Regra:
+
+```js
+A && B
+```
+
+- Se `A` for falsy → retorna `A`
+    
+- Se `A` for truthy → retorna `B`
+    
+
+### Exemplos:
+
+```js
+true && 'ok'      // 'ok'
+false && 'ok'     // false
+10 && 20          // 20
+0 && 20           // 0
+```
+
+📌 **Uso comum**: executar algo só se a condição for verdadeira
+
+```js
+isAdmin && deleteUser();
+```
+
+---
+
+## 3️⃣ Operador `||` (OR)
+
+### Regra:
+
+```js
+A || B
+```
+
+- Se `A` for truthy → retorna `A`
+    
+- Se `A` for falsy → retorna `B`
+    
+
+### Exemplo clássico (valor padrão):
+
+```js
+const name = input || 'Visitante';
+```
+
+⚠️ Problema:
+
+```js
+const count = 0;
+const value = count || 10;
+console.log(value); // 10 😬 (talvez errado)
+```
+
+Porque `0` é falsy.
+
+---
+
+## 4️⃣ Operador `??` (Nullish Coalescing)
+
+Criado **justamente para corrigir esse problema**.
+
+### Regra:
+
+```js
+A ?? B
+```
+
+- Só usa `B` se `A` for `null` ou `undefined`
+    
+
+### Exemplo correto:
+
+```js
+const count = 0;
+const value = count ?? 10;
+console.log(value); // 0 ✅
+```
+
+---
+
+## 🔑 Regra de ouro (nível profissional)
+
+- **Condição / execução** → `&&`
+    
+- **Fallback rápido** → `||`
+    
+- **Valor padrão seguro** → `??`
 

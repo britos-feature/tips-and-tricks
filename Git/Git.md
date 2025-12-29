@@ -1,4 +1,4 @@
-# GIT
+# GIT **(repositório local)**
 
 É uma ferramenta de controle de versionamento de arquivos. GIT, em algumas OS por padrão já vem instalado como no LINUX
 
@@ -82,16 +82,43 @@ git config --list # configurações geral (local)
 	git config --global --list # configurações
 ```
 
-### Criação e inicialização de repositório(local) Git
+## Criação e inicialização de um repositório **(normal)**
 
-A criação de um repositório local é a sua inicialização em uma pasta/folder local, onde serão efetuados os versionamentos dos arquivos.
+A criação de um repositório **normal** `(working repository)`é a sua inicialização em uma pasta/folder local, onde serão efetuados os versionamentos dos arquivos.
+
+- Ao inicializar o repositório uma folder **`.git`** será criada
+- Os arquivos do projeto **ficaram visíveis e editáveis
+- Sua pasta/folder local possuirá: `working tree(arquivos)`, `staging Ares(index)` e `repository GIT`
+
+Uso comum **desenvolvimento local**, criação de **commits**
 
 ```bash
 mkdir myProject
 cd myProjec
 git init # inicialização do Git
 ```
+<br>
+## Criação e inicialização de um repositório **(bare)**
 
+A criação de um repositório **bare** `(repository bare)`é a sua inicialização em uma pasta/folder local, onde será o repository de arquivos.
+
+- Ao inicializar o repositório **não será criada a folder `.git`
+- O próprio **repository** será o diretório
+- Nele apenas conterá : `objects`, `refs`, `HEAD` e `config`
+
+Uso comum **servidor GIT**, repositório **central** para `push`/ `pull` 
+
+**Nele não pode**
+ -  Editar arquivos  
+- Criar commits diretamente  
+-  Usar como ambiente de desenvolvimento
+
+```bash
+mkdir myProject
+cd myProjec
+git init --bare # inicialização do Git
+```
+<br>
 ### Clonando repositório (local) Git
 
 A clonagem de um repositório localmente é a copia da pasta de arquivos, inicializando o Git para poderem ser efetuados os controles de versionamentos da pasta de arquivo copiada.

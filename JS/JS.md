@@ -4,7 +4,7 @@ JavaScript é uma linguagem de programação de alto nível, interpretada e base
 
 
 ## Referências
-### [[Variables]], [[Strings]], [[Number]], [[Conditional]], [[Arrays]], [[Objects]], [[Functions]], [[Class]], [[Promises]], [[JSON]]
+### [[Variables]], [[Strings]], [[Number]], [[Short-circuit]], [[Arrays]], [[Objects]], [[Functions]], [[Class]], [[Promises]], [[JSON]]
 
 
 ## Utilidades para utilização de Java Script em um projeto:

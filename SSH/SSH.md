@@ -225,8 +225,13 @@ ssh -L 8080:servidor_destino:80 usuario@ip_do_servidor
 ```shell
 	ssh-keygen -t ed25519 -C "seuemail@example.com"
 
-# -t ed25519 → tipo de chave moderna e segura (recomendado). Alternativa: `rsa` (antigo).
+# -t ed25519 → tipo chave moderna e segura (recomendado).
 # -C → comentário para identificar a chave.
+# name 'default'
+
+	ssh-keygen -f ~/.ssh/personal -t ed25519 -C 'email@...'
+
+# -f ~/.ssh/personal → nomeando chave e apontando caminho.  
 ```
 
 ### ***Copiar a chave pública para o servidor:***
