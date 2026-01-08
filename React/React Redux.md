@@ -3,22 +3,44 @@
 
 # 📦 React + Redux – Guia Completo de Funcionamento e Implantação
 
-Este projeto demonstra a arquitetura, o funcionamento e o processo de implantação de uma aplicação **React** utilizando **Redux** para gerenciamento de estado global.
+Este documento demonstra a arquitetura, o funcionamento e o processo de instalação de uma aplicação **React** utilizando **Redux** para gerenciamento de estado global.
+**Práticas modernas (`@reduxjs/toolkit`)**.
 
 ---
 
-## 🧠 O que é React + Redux?
+## 📌 O que é Redux?
 
-- **React**: biblioteca JavaScript para construção de interfaces de usuário baseadas em componentes.
-- **Redux**: biblioteca para gerenciamento de estado global previsível.
-- **Redux Toolkit (RTK)**: conjunto oficial de ferramentas que simplifica o uso do Redux.
+Redux é uma biblioteca de **gerenciamento de estado global** para aplicações JavaScript. Ele ajuda a controlar estados compartilhados entre vários componentes, tornando o fluxo de dados **previsível**, **centralizado** e **fácil de depurar**.
 
-O **Redux** é especialmente útil quando:
+No React, o Redux é usado quando:
 
-- Muitos componentes precisam compartilhar o mesmo estado
-- O estado da aplicação é complexo
-- É necessário controle e previsibilidade das mudanças de estado
-   
+- Muitos componentes precisam acessar o mesmo estado
+- O estado cresce e fica difícil de manter com `useState` e `props`
+- É necessário histórico, rastreabilidade e previsibilidade das mudanças
+
+---
+
+## 🧠 Conceitos Fundamentais
+
+### Store
+A **store** é o local único onde todo o estado da aplicação fica armazenado.
+
+### State
+É o **estado global** da aplicação.
+
+### Action
+É um objeto que descreve **o que aconteceu** na aplicação.
+
+```js
+{ type: 'counter/increment' }
+```
+
+### Reducer
+É uma função **pura** que recebe o estado atual e uma ação, retornando um novo estado.
+
+### Dispatch
+É o método usado para **disparar uma action**.
+
 ---
 
 ## 🏗️ Arquitetura do Projeto
@@ -44,7 +66,43 @@ src/
 
 ---
 
-## 📦 Instalação (basic)
+## ⚙️ Funcionamento do Redux
+
+#### 1️⃣ Store (Armazém Global)
+
+A **store** é o objeto central que contém todo o estado global da aplicação.
+
+#### 2️⃣ Slice (Estado + Reducers)
+
+Um **slice** definem ( "Estado inicial", "Reducers (funções que alteram o estado" e "Actions (geradas automaticamente)")
+
+#### 3️⃣ Fluxo de Dados no Redux
+
+O fluxo segue sempre o mesmo padrão:
+
+
+1. O usuário interage com a interface
+2. Um `dispatch` é executado
+3. O reducer atualiza o estado
+4. Os componentes são re-renderizados
+
+```
+UI → dispatch(action) → reducer → store → UI
+```
+
+#### 4️⃣ Acessando o Estado e Actions
+
+Hooks do React Redux,:
+- "**`useSelector`**: acessa o estado
+- **`useDispatch`**: dispara actions
+
+---
+
+## 🚀 Redux (depreciated)
+ 
+	- Método para alteração do `state` e exibindo o `state` atual em todos os components desejados.
+
+### 📦 Instalação
 
 ```bash
 
@@ -53,24 +111,22 @@ npm install redux react-redux
 ```
 
 
----
-
-
-## ⚙️ Funcionamento do Redux
-
-### 1️⃣ Store (Armazém Global)
-
-A **store** é o objeto central que contém todo o estado global da aplicação.
-
- - ### Basic
+### 🗄️ Criando a Store
 
 ```js
+// store/index.js
+
 import { createStore } from 'redux';
 
-const reducer = (state, action) => {
-	switch(action.type) {
-		case 'BUTTON_CLICKED':
-			return state;
+const initialState = { 	buttonClicked: false, };
+
+const reducer = (state = initialState, action) => {
+	switch (action.type) {
+		case 'BUTTON_CLICKED': {
+			const newState = { ...state };
+			newState.buttonClicked = !newState.buttonClicked;
+			return newState;
+		}
 		
 		default:
 			return state;
@@ -78,284 +134,242 @@ const reducer = (state, action) => {
 };
 
 const store = createStore(reducer);
-
 export default store;
 ```
 
+## 🧩 Criando um `<Provider>`
 
->  O **redux**  é fornecido à aplicação/ components - **envolvendo/englobando** os mesmos pela tag **<`Provider`>** passando como atributo o **`store`**
-
-```jsx
-import { Provider } from 'react-redux';
-import store from './store';
-
-<Provider store={store}>
-   <App />
-</Provider>
-```
-
-
-> Escutando a `action` **redux in components**
+ - O **redux**  é fornecido a aplicação devido ao **envolvimento/englobamento** dos **components** via tag **<`Provider`>** utilizando-se do atributo **`store`**
 
 ```js
-import { useDispatch } from 'react-redux'
+// src/App.js
 
-const dispatch = useDispatch();
+import { Provider } from 'react-redux';
+import store from './store'; 
 
-const handleClick = () => dispatch({ type: 'BUTTON_CLICKED' });
-
-function APP () {
-	return <button type='button' onClick={handleClick}>Click here</button>
+function App() {
+	return (
+	
+		<Provider store={store}>
+			<Router history={history}>
+				<Header />
+				<Routes />
+				<GlobalStyles />
+				<ToastContainer autoClose={3000} className="toast-container" />
+			</Router>
+		</Provider>
+		
+	);
 }
 
 export default App;
 ```
 
+## 🎯 Usando Redux em Componentes 
 
+- ### Disparar ações: `useDispatch`
+
+```js
+// src/page/Login/index.js
+
+import { useDispatch } from 'react-redux'
+
+function Login() {
+	const dispatch = useDispatch();
+		
+	function handleClick(e) {
+		e.preventDefault();
+		dispatch({ type: 'BUTTON_CLICKED', });
+	}
+	
+	return (
+		<Container>
+			<h1>Hello World</h1>
+			<button type="button" onClick={handleClick}>
+				Click here
+			</button>
+		</Container>
+	);
+}
+
+export default Login;
+```
+
+- ### Ler estado: `useSelector`
+
+```js
+// src/components/Header/index.js
+
+import { useSelector } from 'react-redux'
+
+function Header() {
+	const buttonClicked = useSelector((state) => state.buttonClicked);
+	
+	return (
+		<Nav>
+			<Link to="/"><FaHome size={24} /></Link>
+			<Link to="login"><FaUserAlt size={24} /></Link>
+			<Link to="123"><FaSignInAlt size={24} /></Link>
+			{buttonClicked ? 'Clicked' : 'Not clicked'}
+		</Nav>
+	);
+}
+
+export default Header;
+```
+<br>
+
+---
 ---
 
 
+# Redux com React
+
+## 🚀 Redux Moderno: Redux Toolkit (RTK)
+
+Hoje, a forma recomendada de usar Redux é com **Redux Toolkit**, que:
+
+- Reduz boilerplate
+- Evita mutações acidentais
+- Vem com boas práticas por padrão
+
+Pacotes principais:
+
+- `@reduxjs/toolkit`
+- `react-redux`
+
+---
+
+## 📦 Instalação
+
+### Instalar Redux
+
+```bash
+npm install @reduxjs/toolkit react-redux
+```
+
+---
+
+## 🗄️ Criando a Store
+
+**src/app/store.js**
+
 ```js
-import { configureStore } from '@reduxjs/toolkit';
-import exampleReducer from '../features/example/exampleSlice';
+import { configureStore } from '@reduxjs/toolkit'
+import counterReducer from '../features/counter/counterSlice'
 
 export const store = configureStore({
   reducer: {
-    example: exampleReducer,
+    counter: counterReducer,
   },
-});
-```
-
-Ela é fornecida à aplicação usando o `Provider`:
-
-```jsx
-import { Provider } from 'react-redux';
-import { store } from './app/store';
-
-<Provider store={store}>
-   <App />
-</Provider>
+})
 ```
 
 ---
 
-### 2️⃣ Slice (Estado + Reducers)
+## 🧩 Criando um Slice
 
-Um **slice** define:
+Um **slice** reúne estado, reducers e actions em um único arquivo.
 
-- Estado inicial
-    
-- Reducers (funções que alteram o estado)
-    
-- Actions (geradas automaticamente)
-    
+**src/features/counter/counterSlice.js**
 
 ```js
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit'
 
-const exampleSlice = createSlice({
-  name: 'example',
-  initialState: {
-    value: 0,
-  },
+const initialState = {
+  value: 0,
+}
+
+export const counterSlice = createSlice({
+  name: 'counter',
+  initialState,
   reducers: {
     increment: (state) => {
-      state.value += 1;
+      state.value += 1
+    },
+    decrement: (state) => {
+      state.value -= 1
     },
   },
-});
+})
 
-export const { increment } = exampleSlice.actions;
-export default exampleSlice.reducer;
+export const { increment, decrement } = counterSlice.actions
+export default counterSlice.reducer
+```
+
+> ⚠️ Parece mutação, mas o Redux Toolkit usa **Immer** por baixo dos panos.
+
+---
+
+## 🔌 Conectando o Redux ao React
+
+Envolva a aplicação com o `Provider`.
+
+**src/main.jsx**
+
+```js
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { Provider } from 'react-redux'
+import { store } from './app/store'
+import App from './App'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+)
 ```
 
 ---
 
-### 3️⃣ Fluxo de Dados no Redux
+## 🎯 Usando Redux em Componentes
 
-O fluxo segue sempre o mesmo padrão:
+### Ler estado: `useSelector`
 
-```
-UI → dispatch(action) → reducer → store → UI
-```
+### Disparar ações: `useDispatch`
 
-1. O usuário interage com a interface
-    
-2. Um `dispatch` é executado
-    
-3. O reducer atualiza o estado
-    
-4. Os componentes são re-renderizados
-    
+**Exemplo:**
 
----
+```js
+import { useSelector, useDispatch } from 'react-redux'
+import { increment, decrement } from './features/counter/counterSlice'
 
-### 4️⃣ Acessando o Estado e Actions
-
-Hooks do React Redux:
-
-- `useSelector`: acessa o estado
-    
-- `useDispatch`: dispara actions
-    
-
-```jsx
-import { useSelector, useDispatch } from 'react-redux';
-import { increment } from './exampleSlice';
-
-const ExampleComponent = () => {
-  const value = useSelector((state) => state.example.value);
-  const dispatch = useDispatch();
+function Counter() {
+  const count = useSelector((state) => state.counter.value)
+  const dispatch = useDispatch()
 
   return (
-    <>
-      <p>Valor: {value}</p>
-      <button onClick={() => dispatch(increment())}>
-        Incrementar
-      </button>
-    </>
-  );
-};
+    <div>
+      <p>Valor: {count}</p>
+      <button onClick={() => dispatch(increment())}>+</button>
+      <button onClick={() => dispatch(decrement())}>-</button>
+    </div>
+  )
+}
+
+export default Counter
 ```
 
 ---
 
-## 🌐 Redux com Requisições Assíncronas
+## ✅ Quando Usar Redux?
 
-Usando `createAsyncThunk`:
+Use Redux quando:
 
-```js
-import { createAsyncThunk } from '@reduxjs/toolkit';
+- O estado é compartilhado por muitos componentes
+- A lógica de estado é complexa
+- Você precisa de previsibilidade e escalabilidade
 
-export const fetchData = createAsyncThunk(
-  'example/fetchData',
-  async () => {
-    const response = await fetch('https://api.exemplo.com/data');
-    return response.json();
-  }
-);
-```
+Evite Redux quando:
 
-Estados comuns:
-
-- `pending`
-    
-- `fulfilled`
-    
-- `rejected`
-    
-
-Isso facilita loading e tratamento de erros.
+- Estado é simples e local
+- `useState` ou `useContext` resolvem
 
 ---
 
-## 🚀 Implantação (Deploy)
+## 📚 Referências
 
-### 🔧 Build de Produção
-
-```bash
-npm run build
-```
-
-Gera a pasta:
-
-```
-dist/   (Vite)
-build/  (Create React App)
-```
-
----
-
-## ☁️ Deploy com Vercel
-
-1. Suba o projeto para o GitHub
-    
-2. Acesse [https://vercel.com](https://vercel.com)
-    
-3. Importe o repositório
-    
-4. Configure:
-    
-    - Framework: React / Vite
-        
-    - Build Command: `npm run build`
-        
-    - Output Directory: `dist`
-        
-5. Deploy automático 🎉
-    
-
----
-
-## ☁️ Deploy com Netlify
-
-1. Acesse [https://netlify.com](https://netlify.com)
-    
-2. Novo site → Import from Git
-    
-3. Configure:
-    
-    - Build command: `npm run build`
-        
-    - Publish directory: `dist`
-        
-4. Deploy concluído
-    
-
----
-
-## 🐳 Deploy com Docker (Opcional)
-
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-CMD ["npx", "serve", "dist"]
-```
-
-```bash
-docker build -t react-redux-app .
-docker run -p 3000:3000 react-redux-app
-```
-
----
-
-## 🔐 Variáveis de Ambiente
-
-Exemplo `.env`:
-
-```
-VITE_API_URL=https://api.exemplo.com
-```
-
-Uso:
-
-```js
-import.meta.env.VITE_API_URL
-```
-
----
-
-## ✅ Boas Práticas
-
-- Use Redux apenas para **estado global**
-- Prefira Redux Toolkit
-- Organize por **features**
-- Evite lógica pesada nos componentes
-- Utilize middlewares para efeitos colaterais
-
----
-
-## 📚 Tecnologias Utilizadas
-
-- React
-- Redux Toolkit
-- React Redux
-- Vite / CRA
-- JavaScript / TypeScript
-
----
-
+- [https://redux.js.org](https://redux.js.org)
+- [https://react-redux.js.org](https://react-redux.js.org)
+- [https://redux-toolkit.js.org](https://redux-toolkit.js.org)
