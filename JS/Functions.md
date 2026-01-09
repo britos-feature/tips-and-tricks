@@ -14,9 +14,9 @@ No JavaScript, a escolha entre **CONST**,**'FUNCTTION(tradicionais)**,**'FUNCTIO
 
 - **Desempenho**: Pode ser ligeiramente mais lento em alguns casos porque o contexto (`this`) precisa ser gerenciado. No entanto, isso raramente é um problema perceptível para a maioria das aplicações.
 
-#### FUNCTION ANONIMAL
+#### ANONYMOUS FUNCTION 
 
-- **Descrição**: **FUNÇÕDS ANONIMAS** são funções sem nome que podem ser atribuídas a variáveis. Elas são frequentemente usadas como **callbacks**.
+- **Descrição**: **FUNÇÕES ANONIMAS** são funções sem nome que podem ser atribuídas a variáveis. Elas são frequentemente usadas como **callbacks**.
 
 - **Desempenho**: O desempenho é similar ao das funções tradicionais. A principal diferença é que, por serem anônimas, podem ser menos legíveis em alguns casos.
 
@@ -26,13 +26,21 @@ No JavaScript, a escolha entre **CONST**,**'FUNCTTION(tradicionais)**,**'FUNCTIO
 
 - **Desempenho**: Em geral, não há uma diferença significativa de desempenho em comparação com funções tradicionais. A principal vantagem é a sintaxe mais compacta e a herança léxica do `this`, que pode simplificar o código e reduzir bugs relacionados ao contexto.
 
+#### GENERATOR FUNCTIONS
+
+- **Descrição: GENERATOR FUNCTION (`function*`)** é uma função especial do JavaScript que **não executa tudo de uma vez**, mas **produz valores aos poucos**, pausando e retomando sua execução sempre que necessário.
+
+- **Desempenho:** Funções Geradoras são **mais lentos** que funções normais em chamadas simples. Em geral ! **`function` normal** são mais rápida, **Funções Geradoras** são 2x a 5x mais lenta em loops intensivos (depende do engine).
+
+> ⚠️ Portanto, **não use geradores para cálculos numéricos pesados ou loops críticos de performance**.
+
 ##### Resumo:
 
 1. **CONST**: Útil para garantir que uma variável não seja reatribuída, mas não afeta o desempenho.
 
 2. **FUNCTION**: Podem ser um pouco mais lentas devido à manipulação do `this`, mas a diferença é mínima.
 
-3. **FUNCTION ANONIMAL**: Semelhantes às funções tradicionais em termos de desempenho, mas menos legíveis se não forem usadas com cuidado.
+3. **ANONYMOUS FUNCTION**: Semelhantes às funções tradicionais em termos de desempenho, mas menos legíveis se não forem usadas com cuidado.
 
 4. **ARROW-FUNCTION**: Oferecem uma sintaxe mais limpa e ajudam a evitar problemas com o `this`, sem uma penalidade significativa de desempenho.
 
