@@ -232,7 +232,7 @@ module.exports = {
 
 **Próximo passo,** criar arquivo de <span style="color: red"><b>MIGRATIONS</b></span>  (arquivos de tabelas/campos), no projeto APIRest
 
-`npx sequelize migration:create --name=students`
+`npx sequelize migration:generate --name=students`
 
 
 **Configuração do arquivo** <span style="color: red"><b>MIGRATIONS</b></span> **criado**  `/src/database/migrations`
@@ -650,7 +650,7 @@ Exemplo:
 	 migrado no banco de dados campo como **`password_hash`**: `type: string` e `allowNull: false` (sendo obrigatório sua declaração).
 	 
 	 **`password_hash`** -> modelo de validação campo como : `type: string` e `allowNull: false` (sendo obrigatório sua declaração).
-	 
+	
 	 **`password`** -> modelo de validação campo como: `type: virtual`, `defaultValue: " "`, `validate: { len: { args: [3, 25], msg: "Personalizada"`}}
 
 A migração (migration) é onde criamos os campo da tabela no Banco de dados, informando como as campos vão funcionar.

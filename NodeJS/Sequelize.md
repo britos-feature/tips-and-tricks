@@ -1,0 +1,1 @@
+sequelize utiliza o Validator por baixo dos panos para validação de campos.

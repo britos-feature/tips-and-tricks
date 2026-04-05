@@ -1,4 +1,4 @@
-# ***`tar.gz`
+ # ***`tar.gz`
 
 O **`.tar.gz`** é um formato muito comum no Linux/Unix para empacotar e comprimir arquivos, ele é composto por duas etapas:
 

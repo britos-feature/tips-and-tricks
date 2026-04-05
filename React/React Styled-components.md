@@ -1,4 +1,3 @@
-
 # Styled Components – Guia de Boas Práticas
 
 Este documento descreve como utilizar **styled-components** em projetos React de forma correta, escalável e profissional, abordando conceitos, boas práticas, armadilhas comuns e padrões recomendados.
@@ -64,7 +63,7 @@ function MyComponents() {
 ```
 
 
-## 🔤 Sintaxe basic using \"_`props`_\"
+## 🔤 Sintaxe basic using \"_`props`_\" 
 
 **Styled-components `props`** são **propriedades do React** que você passa para um componente estilizado e usa **dentro do CSS** para **alterar o estilo dinamicamente**.
 
@@ -106,6 +105,47 @@ function MyComponents() {
 }
 ```
 <br>
+## 🔤 Sintaxe basic using \" _`transient props`_ \"
+
+No **styled-components**, _transient props_ são **props temporárias**, usadas **apenas para estilização**, que **não são repassadas para o DOM**.
+
+Com transient props, você usa props **prefixadas com `$`**, que o styled-components **remove automaticamente antes de renderizar no DOM**
+
+- Create components (**`styled.js`**)
+
+```js
+import styled from 'styled-components';
+
+const Paragraph = styled.p`
+	color: ${({ $isConfigured }) =>
+		$isConfigured ? 'blue' : 'red'}; // transient props
+`;
+
+export { Paragraph };
+
+```
+
+
+-  Using components (**`ìndex.js`**)
+
+```js
+import { Paragraph } from './styled';
+
+function Login() {
+	return (
+		<>
+			{/* transient props "$" - para chamada da variável */}
+			<Paragraph $isConfigured>
+				Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vel, ea!
+			</Paragraph>
+		</>
+	);
+}
+
+export default Login;
+
+```
+
 
 ---
 ---
@@ -414,6 +454,66 @@ const Button = styled.button<ButtonProps>`
 `;
 ```
 
+---
+---
+
+# Transient Props
+
+No **styled-components**, _transient props_ são **props temporárias**, usadas **apenas para estilização**, que **não são repassadas para o DOM**.
+
+Elas são identificadas por um **prefixo `$`** no nome da prop.
+
+- ## **Antes dos transient props, era comum fazer algo assim:**
+
+```js
+const Button = styled.button`
+  background: ${props => props.primary ? 'blue' : 'gray'};
+`;
+
+// consumindo
+<Button primary>Salvar</Button>
+```
+<br>
+
+❌ **Problema:**
+A prop **`primary`** acabava indo parar no HTML final.
+
+```html
+<button primary>Salvar</button>
+```
+
+Isso causa:
+
+- Warnings no console do React
+- HTML inválido
+- Problemas de acessibilidade e manutenção
+
+
+- ## Depois dos Transient Props (`$`) - "recomendado"
+	- Com transient props, você usa props **prefixadas com `$`**, que o styled-components **remove automaticamente antes de renderizar no DOM**.
+
+
+```js
+const Button = styled.button`
+  background: ${({ $primary }) => ($primary ? 'blue' : 'gray')};
+  color: white;
+`;
+
+// consumindo
+<Button $primary>Salvar</Button>
+<Button>Cancelar</Button>
+```
+
+
+✅ Correto:
+HTML gerado limpo
+
+```html
+<button>Salvar</button>
+<button>Cancelar</button>
+```
+
+---
 ---
 
 ## ⚡ Performance e SSR

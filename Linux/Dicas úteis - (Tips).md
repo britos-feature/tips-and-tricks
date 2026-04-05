@@ -234,23 +234,87 @@ MY_VAR="value"
 ## **_Partições_**
 
 - **_Listar partições_** _(listar partições existente no disco)_
-  `lsblk` <small> or </small> `fdisk -l`
+	`lsblk` <small> or </small> `fdisk -l`
 
-- **\*Montar partições** (tornar o conteúdo do disco acessível dentro do sistema de arquivos)\*
-  `mount /dev/sda2 /local_montagem` <small> or </small> `mount -t ntfs-3g /dev/sda2 /local_montagem`
+- _**Lista tipo`fileSytem`, espaço em disco**_ _(*partições montadas, Mostra o espaço total, utilizado e disponível.)_
+	`df -h`
+
+- _**Lista diretórios, sub-diretórios e arquivos**_ _(Mostra o tamanho ocupado por um caminho específico)_
+	`du -sh`
+
+- _**Montar partições**_ (tornar o conteúdo do disco acessível dentro do sistema de arquivos)
+	`mount /dev/sda2 /local_montagem` <small> or </small> `mount -t ntfs-3g /dev/sda2 /local_montagem`
 
 >     o flag `-t` corresponde ao ***file system***, sistema de arquivos que será utilizado para montagem da partição.
 
----
+
+## **_Procedimento básico para adicionar  novo 'HDs'**_
+_**(sistemas de blocos)**_
+
+O processo básico é:
+
+1. Identificar o disco
+2. Criar partição
+3. Formatar
+4. Criar ponto de montagem
+5. Montar o disco
+6. Configurar montagem automática (`fstab`)
+
+```bash
+# 1️- Identificar o novo HD
+lsblk
+# or
+sudo fdisk -l
+
+# 2 - Criar partição no disco
+fdisk /dev/sdb
+
+# Dentro do menu utilizar-se de:
+# n -> nova partição
+# p -> primary
+# 1 -> numero partição
+# enter / enter
+# w -> salvar 
+
+# 3 - Formatar o disco
+sudo mkfs.ext4 /dev/sdb1
+
+# 4 - Criar ponto de montagem
+sudo mkdir /mnt/files
+
+# 5 - Montar o disco
+sudo mount /dev/sdb1 /mnt/files # manualmente
+# verificação
+df -h
+# or
+lsblk
+
+
+# 6 - Configurar montagem automática (fstab)
+# Descobrir o numero do UUID do disco
+# exemplo : /dev/sdb1: UUID="6f8c2b1a-9f34-4c6e-bb0f-7c9e5c4d2a11" TYPE="ext4"
+blkid 
+
+# Editar o fstab ('/etc/fstab')
+sudo nano /etc/fstab
+# Adicionar ao final da linha (UUID)
+UUID=6f8c2b1a-9f34-4c6e-bb0f-7c9e5c4d2a11 /mnt/arquivos ext4 defaults 0 2
+
+# Testar 'fstab' (IMPORTANTE) - antes de reiniciar
+sudo mount -a
+```
+
+
 
 ---
 
-## _Obter e visualizar informações do sistema operacional no Linux_
+---
+ualizar informações do sistema operacional no Linux_
 
 **_Informações Gerais do Sistema Operacional_**
 `cat /etc/os-release` <small>or</small> `lsb_release -a`
 
->     (o `lsb_release` pode precisar ser instalado em algumas distros — ex: `sudo apt install lsb-release` no Ubuntu/Debian)
+>     `lsb_release` -  pode precisar ser instalado em algumas distros  ! `sudo apt install lsb-release`
 
 **_Resumo do Sistema (completo)_**
 `neofetch`
@@ -409,6 +473,15 @@ sudo chmod a+rx /usr/local/bin/yt-dlp
 
 ---
 
+## _Apagar completament um Pendrive
+
+`sudo dd if=/dev/zero of=/dev/sdX bs=4M status=progress`
+
+**Segurança máxima.**
+`sudo shred -v -n 3 /dev/sdX` --> X = partição
+
+---
+ls
 ## _Criar pendrive bootável_
 
 ### Método 1
@@ -453,6 +526,7 @@ sdb  (pendrive)
 ```bash
 sudo dd if=/caminho/da/imagem.iso of=/dev/sdX bs=4M status=progress oflag=sync
 ```
+
 
 **Substitua:**
 

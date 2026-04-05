@@ -60,6 +60,18 @@ rsync -avz ./site/ root@192.168.0.10:/var/www/html/
 
 > Muito bom para pastas grandes, pois só transfere diferenças.
 
+-  ***Copy*** 
+
+```bash
+rsync -havi pasta_origem/ pasta_destino/
+```
+
+***Example:***
+
+```bash
+
+```
+
 
 ---
 
