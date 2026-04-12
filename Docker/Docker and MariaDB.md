@@ -134,6 +134,14 @@ EOF
 sudo apt update
 ```
 
+### Depois disso, instale o Docker
+
+```bash
+
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+```
+
 ---
 
 ### 👤 Rodar Docker sem sudo (Essencial)
